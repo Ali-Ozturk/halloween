@@ -11,9 +11,8 @@ interface AuthFormProps {
 }
 
 export default function AuthForm({ onSuccess }: AuthFormProps) {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,30 +20,19 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (error) throw error;
-        toast.success("Welcome back!");
-        onSuccess();
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-          },
-        });
-        
-        if (error) throw error;
-        toast.success("Account created! You can now log in.");
-        setIsLogin(true);
-      }
+      // Convert username to email format for Supabase auth
+      const email = `${username.toLowerCase().trim()}@contest.app`;
+      
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password: token,
+      });
+      
+      if (error) throw error;
+      toast.success("Welcome! You can now vote.");
+      onSuccess();
     } catch (error: any) {
-      toast.error(error.message || "An error occurred");
+      toast.error("Invalid username or login token");
     } finally {
       setLoading(false);
     }
@@ -54,35 +42,34 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
     <Card className="w-full max-w-md shadow-[var(--shadow-card)]">
       <CardHeader>
         <CardTitle className="text-2xl bg-[var(--gradient-primary)] bg-clip-text text-transparent">
-          {isLogin ? "Welcome Back" : "Join the Contest"}
+          Enter to Vote
         </CardTitle>
         <CardDescription>
-          {isLogin ? "Sign in to cast your vote" : "Create an account to participate"}
+          Use your username and login token provided by the administrator
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="username"
+              type="text"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="token">Login Token</Label>
             <Input
-              id="password"
+              id="token"
               type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your login token"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
               required
-              minLength={6}
             />
           </div>
           <Button
@@ -90,15 +77,11 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
             className="w-full"
             disabled={loading}
           >
-            {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
+            {loading ? "Signing In..." : "Sign In & Vote"}
           </Button>
-          <button
-            type="button"
-            onClick={() => setIsLogin(!isLogin)}
-            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-          </button>
+          <p className="text-xs text-center text-muted-foreground">
+            Don't have credentials? Contact your administrator.
+          </p>
         </form>
       </CardContent>
     </Card>
