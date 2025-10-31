@@ -12,7 +12,6 @@ interface AuthFormProps {
 
 export default function AuthForm({ onSuccess }: AuthFormProps) {
   const [username, setUsername] = useState("");
-  const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,14 +24,14 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
       
       const { error } = await supabase.auth.signInWithPassword({
         email,
-        password: token,
+        password: username.toLowerCase().trim(), // Use username as password
       });
       
       if (error) throw error;
       toast.success("Welcome! You can now vote.");
       onSuccess();
     } catch (error: any) {
-      toast.error("Invalid username or login token");
+      toast.error("Username not found. Contact your administrator.");
     } finally {
       setLoading(false);
     }
@@ -45,7 +44,7 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
           Enter to Vote
         </CardTitle>
         <CardDescription>
-          Use your username and login token provided by the administrator
+          Enter your username provided by the administrator
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -58,17 +57,6 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
               placeholder="Enter your username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="token">Login Token</Label>
-            <Input
-              id="token"
-              type="password"
-              placeholder="Enter your login token"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
               required
             />
           </div>
