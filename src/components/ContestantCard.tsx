@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Trophy, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -29,6 +30,7 @@ export default function ContestantCard({
   isAdmin,
 }: ContestantCardProps) {
   const [voting, setVoting] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
   const isVotedFor = userVotedFor === id;
 
   const handleVote = async () => {
@@ -86,24 +88,28 @@ export default function ContestantCard({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:-translate-y-1">
-      <div className="relative h-64 overflow-hidden bg-muted">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-[var(--gradient-primary)]">
-            <Trophy className="w-16 h-16 text-primary-foreground opacity-50" />
+    <>
+      <Card className="overflow-hidden hover:shadow-[var(--shadow-glow)] transition-all duration-300 hover:-translate-y-1">
+        <div 
+          className="relative h-64 overflow-hidden bg-muted cursor-pointer"
+          onClick={() => imageUrl && setShowImageModal(true)}
+        >
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={name}
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-[var(--gradient-primary)]">
+              <Trophy className="w-16 h-16 text-primary-foreground opacity-50" />
+            </div>
+          )}
+          <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-2">
+            <Heart className="w-4 h-4 text-destructive fill-destructive" />
+            <span className="font-bold">{voteCount}</span>
           </div>
-        )}
-        <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-2">
-          <Heart className="w-4 h-4 text-destructive fill-destructive" />
-          <span className="font-bold">{voteCount}</span>
         </div>
-      </div>
       <CardContent className="p-5">
         <h3 className="text-xl font-bold mb-2">{name}</h3>
         {description && (
@@ -130,5 +136,16 @@ export default function ContestantCard({
         </div>
       </CardContent>
     </Card>
+
+    <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
+      <DialogContent className="max-w-4xl p-0 overflow-hidden">
+        <img
+          src={imageUrl || ''}
+          alt={name}
+          className="w-full h-auto"
+        />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

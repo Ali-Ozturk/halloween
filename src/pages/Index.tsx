@@ -130,7 +130,7 @@ export default function Index() {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white drop-shadow-lg">
             Costume Contest Voting
           </h1>
           <p className="text-xl md:text-2xl text-white/90 drop-shadow-md">
