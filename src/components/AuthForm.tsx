@@ -24,7 +24,7 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
       
       const { error } = await supabase.auth.signInWithPassword({
         email,
-        password: username.toLowerCase().trim(), // Use username as password
+        password: "contest5500",
       });
       
       if (error) throw error;
