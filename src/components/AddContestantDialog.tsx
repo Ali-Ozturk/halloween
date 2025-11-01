@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -16,7 +16,7 @@ export default function AddContestantDialog({ onSuccess }: AddContestantDialogPr
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,12 +31,34 @@ export default function AddContestantDialog({ onSuccess }: AddContestantDialogPr
         return;
       }
 
+      let imageUrl: string | null = null;
+
+      // Upload image if file is selected
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('contestant-images')
+          .upload(filePath, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('contestant-images')
+          .getPublicUrl(filePath);
+
+        imageUrl = publicUrl;
+      }
+
       const { error } = await supabase
         .from("contestants")
         .insert({
           name,
           description: description || null,
-          image_url: imageUrl || null,
+          image_url: imageUrl,
           created_by: user.id,
         });
 
@@ -45,7 +67,7 @@ export default function AddContestantDialog({ onSuccess }: AddContestantDialogPr
       toast.success("Contestant added!");
       setName("");
       setDescription("");
-      setImageUrl("");
+      setImageFile(null);
       setOpen(false);
       onSuccess();
     } catch (error: any) {
@@ -89,14 +111,23 @@ export default function AddContestantDialog({ onSuccess }: AddContestantDialogPr
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="imageUrl">Image URL</Label>
-            <Input
-              id="imageUrl"
-              type="url"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-            />
+            <Label htmlFor="image">Costume Image *</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                required
+                className="cursor-pointer"
+              />
+              <Upload className="w-4 h-4 text-muted-foreground" />
+            </div>
+            {imageFile && (
+              <p className="text-sm text-muted-foreground">
+                Selected: {imageFile.name}
+              </p>
+            )}
           </div>
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Adding..." : "Add Contestant"}
