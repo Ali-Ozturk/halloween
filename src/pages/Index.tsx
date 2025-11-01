@@ -63,14 +63,16 @@ export default function Index() {
   }, [user]);
 
   const checkAdmin = async (userId: string) => {
-    try {
+    console.log(userId)
+      try {
       const { data } = await supabase
         .from("user_roles")
-        .select("role")
+        .select("role, user_id")
         .eq("user_id", userId)
         .eq("role", "admin")
         .single();
-      
+
+      console.log("admin?", data);
       setIsAdmin(!!data);
     } catch (error) {
       setIsAdmin(false);
