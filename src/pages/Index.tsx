@@ -65,12 +65,12 @@ export default function Index() {
   const checkAdmin = async (userId: string) => {
     console.log(userId)
       try {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role, user_id")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .single();
+          const { data, error } = await supabase
+              .from("user_roles")
+              .select("role")               // you only need one column
+              .eq("user_id", userId)
+              .eq("role", "admin")
+              .single();
 
       console.log("admin?", data);
       setIsAdmin(!!data);
@@ -124,7 +124,7 @@ export default function Index() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <header className="relative h-80 overflow-hidden">
+      <header className="relative h-60 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
         <img
           src={heroBanner}
@@ -133,7 +133,7 @@ export default function Index() {
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
           <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white drop-shadow-lg">
-            Costume Contest Voting
+            Halloween costumes
           </h1>
           <p className="text-xl md:text-2xl text-white/90 drop-shadow-md">
             Vote for the best costume!
@@ -143,23 +143,16 @@ export default function Index() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-12">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-2">
-            {isAdmin && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-[var(--gradient-secondary)] rounded-full text-secondary-foreground">
-                <Crown className="w-5 h-5" />
-                <span className="font-semibold">Admin</span>
+          <div className="flex items-center justify-end mb-8">
+              <div className="flex gap-3 ml-4">
+                  {isAdmin && <AddContestantDialog onSuccess={fetchData} />}
+                  <Button onClick={handleSignOut} variant="outline" className="gap-2">
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                  </Button>
               </div>
-            )}
           </div>
-          <div className="flex gap-3">
-            {isAdmin && <AddContestantDialog onSuccess={fetchData} />}
-            <Button onClick={handleSignOut} variant="outline" className="gap-2">
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
+
 
         {loading ? (
           <div className="text-center py-20">
